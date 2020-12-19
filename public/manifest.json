@@ -1,25 +1,31 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
-  "icons": [
-    {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+    "manifest_version": 2,
+    "name": "TweakHeader",
+    "short_name": "TeakHeader",
+    "description": "tweak http header",
+    "version": "0.0.1",
+    "browser_action": {
+        "default_popup": "index.html",
+        "default_title": "Tweak Header"
     },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
+    "icons": {
+        "32": "assets/icon_32.png",
+        "48": "assets/icon_48.png",
+        "128": "assets/icon_128.png"
     },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+    "permissions": [
+        "accessibilityFeatures.read",
+        "alarms",
+        "background",
+        "storage",
+        "notifications",
+        "webRequest",
+        "*://*/*/"
+    ],
+    "background": {
+        "scripts": [
+            "chrome/background.js"
+        ]
+    },
+    "options_page": "index.html"
 }
