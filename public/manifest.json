@@ -1,0 +1,31 @@
+{
+    "manifest_version": 2,
+    "name": "TweakHeader",
+    "short_name": "TeakHeader",
+    "description": "tweak http header",
+    "version": "0.0.1",
+    "browser_action": {
+        "default_popup": "index.html",
+        "default_title": "Tweak Header"
+    },
+    "icons": {
+        "32": "assets/icon_32.png",
+        "48": "assets/icon_48.png",
+        "128": "assets/icon_128.png"
+    },
+    "permissions": [
+        "accessibilityFeatures.read",
+        "alarms",
+        "background",
+        "storage",
+        "notifications",
+        "webRequest",
+        "*://*/*/"
+    ],
+    "background": {
+        "scripts": [
+            "chrome/background.js"
+        ]
+    },
+    "options_page": "index.html"
+}
