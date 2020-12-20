@@ -14,18 +14,15 @@
         "128": "assets/icon_128.png"
     },
     "permissions": [
-        "accessibilityFeatures.read",
-        "alarms",
-        "background",
-        "storage",
-        "notifications",
         "webRequest",
+        "webRequestBlocking",
         "*://*/*/"
     ],
     "background": {
         "scripts": [
             "chrome/background.js"
-        ]
+        ],
+        "persistent": true
     },
     "options_page": "index.html"
 }
