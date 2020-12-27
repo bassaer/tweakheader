@@ -6,12 +6,17 @@ const tweakHeader = (detail: chrome.webRequest.WebRequestHeadersDetails) => {
 
     for (const header of requestHeaders) {
         if (header.name.toLocaleLowerCase() === 'user-agent') {
-            header.value = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Mobile/15E148 Safari/604.1';
+            console.log(header.value);
         }
     }
 
     return { requestHeaders }
 };
+
+chrome.browserAction.setPopup({ popup: '' });
+chrome.browserAction.onClicked.addListener(() => {
+    chrome.tabs.create({ url: 'index.html' });
+});
 
 chrome.webRequest.onBeforeSendHeaders.addListener(
     tweakHeader,
