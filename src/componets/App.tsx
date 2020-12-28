@@ -4,22 +4,25 @@ import M from "materialize-css";
 
 type Action = 'Add' | 'Modify' | 'Delete';
 
+let counter = 0;
+
 interface Header {
   id: string;
   name: string;
   value: string;
   enable: boolean;
   action: Action;
-  //[name: string]: string;
 }
 
 type State = {
-  headers: Header[]
+  playing: boolean;
+  headers: Header[];
 }
 
 type ActionType = {
-  type: 'name' | 'value' | 'enable' | 'enable' | 'action' | 'delete';
-  header: Header;
+  type: 'playing' | 'add' | 'name' | 'value' | 'enable' | 'enable' | 'action' | 'delete';
+  playing?: boolean;
+  header?: Header;
   name?: string;
   value?: string;
   enable?: boolean;
@@ -27,23 +30,24 @@ type ActionType = {
 }
 
 const initialState: State = {
+  playing: false,
   headers: [
     {
-      id: '1',
+      id: String(counter++),
       name: 'user-agent',
       value: 'foo',
       action: 'Modify',
       enable: true
     },
     {
-      id: '2',
+      id: String(counter++),
       name: 'Accept',
       value: 'text/html',
       action: 'Delete',
       enable: true
     },
     {
-      id: '3',
+      id: String(counter++),
       name: '',
       value: '',
       action: 'Add',
@@ -53,6 +57,28 @@ const initialState: State = {
 };
 
 const reducer = (state: State, action: ActionType): State => {
+  if (action.type === 'playing') {
+    return {
+      ...state,
+      playing: !state.playing
+    };
+  }
+  if (action.type === 'add') {
+    const lastHeader = state.headers[state.headers.length - 1];
+    if (lastHeader !== undefined && !lastHeader.name && !lastHeader.value) {
+      return { ...state }
+    }
+    return {
+      ...state,
+      headers: [
+        ...state.headers,
+        { id: String(counter++), name: '', value: '', enable: false, action: 'Add' }
+      ]
+    }
+  }
+  if (!action.header) {
+    return { ...state }
+  }
   const header: Header = {
     id: action.header.id,
     name: action.name === undefined ? action.header.name : action.name,
@@ -60,13 +86,15 @@ const reducer = (state: State, action: ActionType): State => {
     enable: action.enable === undefined ? action.header.enable : action.enable,
     action: action.action === undefined ? action.header.action : action.action
   };
-  const targetIndex = state.headers.findIndex(header => header.id === action.header.id)
+  header.enable = header.enable && !!header.name && !!header.value;
+  const targetIndex = state.headers.findIndex(header => header.id === action.header?.id)
   switch (action.type) {
     case 'name':
     case 'value':
     case 'enable':
     case 'action':
       return {
+        ...state,
         headers: [
           ...state.headers.slice(0, targetIndex),
           header,
@@ -74,7 +102,7 @@ const reducer = (state: State, action: ActionType): State => {
         ]
       }
   }
-  return { headers: state.headers.filter((_, index) => index !== targetIndex) }
+  return { ...state, headers: state.headers.filter((_, index) => index !== targetIndex) }
 }
 
 const App: React.FC = () => {
@@ -82,40 +110,39 @@ const App: React.FC = () => {
   useEffect(() => {
     const elems = document.querySelectorAll('select');
     M.FormSelect.init(elems, {});
-  }, []);
+  }, [state]);
   return (
     <div className="App">
-      <ul className="collection with-header">
-        <li className="collection-header">
-          <h4 style={{ display: 'inline-block', marginRight: '10%' }}>Tweak Header</h4>
-          <a
-            className="btn-floating btn-large waves-effect waves-light cyan"
-            style={{ marginLeft: '10px', marginRight: '10px' }}
-          >
-            <i className="material-icons">play_arrow</i>
-          </a>
-          <a
-            className="btn-floating btn-large waves-effect waves-light cyan"
-            style={{ marginLeft: '10px', marginRight: '10px' }}
-          >
-            <i className="material-icons">add</i>
-          </a>
-          <a className="btn-floating btn-large waves-effect waves-light cyan">
-            <i className="material-icons">replay</i>
-          </a>
-        </li>
+      <nav>
+        <div className="nav-wrapper teal lighten-1">
+          <a href="#" className="brand-logo center">Tweak Header</a>
+          <ul className="hide-on-med-and-down">
+            <li>
+              <a onClick={e => dispatch({ type: 'playing' })}>
+                {state.playing ?
+                  <i className="material-icons">pause</i>
+                  :
+                  <i className="material-icons">play_arrow</i>
+                }
+              </a>
+            </li>
+            <li><a onClick={e => dispatch({ type: 'add' })}><i className="material-icons">add</i></a></li>
+          </ul>
+        </div>
+      </nav>
+      <ul className="collection" style={{ overflow: 'visible' }}>
         <form>
-          {state.headers.map((header, index) => (
+          {state.headers.map(header => (
             < li key={header.id} className="collection-item" style={{ padding: 0 }}>
               <div className="row" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 0 }}>
                 <div className="switch col s1">
                   <label>
-                    <input type="checkbox" checked={header.enable} onChange={e => dispatch({ type: 'enable', enable: e.target.checked, header })} />
+                    <input className="cyan" type="checkbox" checked={header.enable} onChange={e => dispatch({ type: 'enable', enable: e.target.checked, header })} />
                     <span className="lever"></span>
                   </label>
                 </div>
                 <div className="input-field col s1">
-                  <select defaultValue={header.action} onChange={e => dispatch({ type: 'action', action: e.target.value as Action, header })}>
+                  <select className="cyan" defaultValue={header.action} onChange={e => dispatch({ type: 'action', action: e.target.value as Action, header })}>
                     <option value="Add">Add</option>
                     <option value="Modify">Modify</option>
                     <option value="Delete">Delete</option>
@@ -127,8 +154,8 @@ const App: React.FC = () => {
                 <div className="input-field col s4">
                   <input placeholder="Value" defaultValue={header.value} onChange={e => { dispatch({ type: 'value', value: e.target.value, header }) }} />
                 </div>
-                <a href="#!" className="col s1" onClick={e => { dispatch({ type: 'delete', header }) }}>
-                  <i className="material-icons">
+                <a href="#!" className="col s1 " onClick={e => { dispatch({ type: 'delete', header }) }}>
+                  <i className="material-icons" style={{ color: "#26a69a" }}>
                     delete
                   </i>
                 </a>
