@@ -9,6 +9,7 @@ chrome.storage?.local.get('state', (data) => {
   if (data.state) {
     state.playing = data.state.playing;
     state.headers = data.state.headers;
+    setBadge(state.playing);
   }
 });
 
@@ -62,4 +63,11 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
   const data = changes.state.newValue as State;
   state.playing = data.playing;
   state.headers = data.headers;
+  setBadge(state.playing);
 });
+
+const setBadge = (enable: boolean) => {
+  chrome.browserAction.setBadgeText({ text: enable ? '⚡️' : '' });
+  chrome.browserAction.setBadgeBackgroundColor({ color: '#000000' });
+}
+

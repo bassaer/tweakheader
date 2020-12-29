@@ -100,7 +100,7 @@ const App: React.FC = () => {
     <div className="App">
       <nav>
         <div className="nav-wrapper teal lighten-1">
-          <a href="#" className="brand-logo center">Tweak Header</a>
+          <a href="#" className={`brand-logo center pulse`}>Tweak Header</a>
           <ul className="hide-on-med-and-down">
             <li>
               <a onClick={e => dispatch({ type: 'playing' })}>
@@ -120,7 +120,7 @@ const App: React.FC = () => {
           <form>
             {state.headers.map(header => (
               < li key={header.id} className="collection-item" style={{ padding: 0 }}>
-                <div className="row" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 0 }}>
+                <div className="row valign-wrapper" style={{ marginBottom: 0 }}>
                   <div className="switch col s1">
                     <label>
                       <input
