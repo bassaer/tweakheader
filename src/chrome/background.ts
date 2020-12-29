@@ -50,10 +50,11 @@ chrome.browserAction.onClicked.addListener(() => {
   chrome.tabs.create({ url: 'index.html' });
 });
 
+chrome.webRequest.onBeforeSendHeaders.removeListener(tweakHeader);
 chrome.webRequest.onBeforeSendHeaders.addListener(
   tweakHeader,
   { urls: ['<all_urls>'] },
-  ['blocking', 'requestHeaders']
+  ['blocking', 'requestHeaders', 'extraHeaders']
 );
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
