@@ -1,21 +1,21 @@
 import { State } from '../models/state';
 
 const state: State = {
-  playing: false,
+  running: false,
   headers: []
 };
 
 chrome.storage?.local.get('state', (data) => {
   if (data.state) {
-    state.playing = data.state.playing;
+    state.running = data.state.playing;
     state.headers = data.state.headers;
-    setBadge(state.playing);
+    setBadge();
   }
 });
 
 const tweakHeader = (detail: chrome.webRequest.WebRequestHeadersDetails) => {
   const requestHeaders = detail.requestHeaders;
-  if (!state.playing || !requestHeaders) {
+  if (!state.running || !requestHeaders) {
     return { requestHeaders };
   }
   const result: chrome.webRequest.HttpHeader[] = [];
@@ -61,13 +61,14 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     return;
   }
   const data = changes.state.newValue as State;
-  state.playing = data.playing;
+  state.running = data.running;
   state.headers = data.headers;
-  setBadge(state.playing);
+  setBadge();
 });
 
-const setBadge = (enable: boolean) => {
-  chrome.browserAction.setBadgeText({ text: enable ? '⚡️' : '' });
-  chrome.browserAction.setBadgeBackgroundColor({ color: '#000000' });
+const setBadge = () => {
+  const count = state.headers.filter(header => header.enable).length;
+  chrome.browserAction.setBadgeText({ text: state.running ? String(count) : '' });
+  chrome.browserAction.setBadgeBackgroundColor({ color: '#FF0000' });
 }
 

@@ -2,11 +2,12 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import M from "materialize-css";
 import { Action, ActionType, Header, State } from '../models/state';
+import headerFields from '../models/fields';
 
 let counter = 0;
 
 const initialState: State = {
-  playing: false,
+  running: false,
   headers: [
     {
       id: String(counter++),
@@ -25,10 +26,10 @@ const reducer = (state: State, action: ActionType): State => {
       headers: action.headers
     };
   }
-  if (action.type === 'playing') {
+  if (action.type === 'running') {
     const result = {
       ...state,
-      playing: action.playing === undefined ? !state.playing : action.playing
+      running: action.running === undefined ? !state.running : action.running
     };
     save(result);
     return result;
@@ -80,8 +81,19 @@ const App: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isLoaded, setIsLoaded] = useState(false);
   useEffect(() => {
-    const elems = document.querySelectorAll('select');
-    M.FormSelect.init(elems, {});
+    const select = document.querySelectorAll('select');
+    M.FormSelect.init(select, {});
+    const autocomplete = document.querySelectorAll('.autocomplete');
+    M.Autocomplete.init(autocomplete, {
+      ...headerFields, onAutocomplete: (function (this: M.Autocomplete, text: string) {
+        const index = this.el.getAttribute("data-index");
+        if (index === null) {
+          return;
+        }
+        const header = state.headers[parseInt(index)];
+        dispatch({ type: 'name', name: text, header });
+      })
+    });
   }, [state, isLoaded]);
   useEffect(() => {
     if (!chrome.storage) {
@@ -91,7 +103,7 @@ const App: React.FC = () => {
     chrome.storage?.local.get('state', data => {
       if (data.state) {
         dispatch({ type: 'init', headers: data.state.headers as Header[] })
-        dispatch({ type: 'playing', playing: data.state.playing as boolean })
+        dispatch({ type: 'running', running: data.state.running as boolean })
       }
       setIsLoaded(true);
     });
@@ -103,8 +115,8 @@ const App: React.FC = () => {
           <a href="#" className={`brand-logo center pulse`}>Tweak Header</a>
           <ul className="hide-on-med-and-down">
             <li>
-              <a onClick={e => dispatch({ type: 'playing' })}>
-                {state.playing ?
+              <a onClick={e => dispatch({ type: 'running' })}>
+                {state.running ?
                   <i className="material-icons">pause</i>
                   :
                   <i className="material-icons">play_arrow</i>
@@ -118,7 +130,7 @@ const App: React.FC = () => {
       {isLoaded ? (
         <ul className="collection" style={{ overflow: 'visible', marginTop: 0 }}>
           <form>
-            {state.headers.map(header => (
+            {state.headers.map((header, index) => (
               < li key={header.id} className="collection-item" style={{ padding: 0 }}>
                 <div className="row valign-wrapper" style={{ marginBottom: 0 }}>
                   <div className="switch col s1">
@@ -145,6 +157,8 @@ const App: React.FC = () => {
                   </div>
                   <div className="input-field col s4">
                     <input
+                      className="autocomplete"
+                      data-index={index}
                       placeholder="Name"
                       defaultValue={header.name}
                       onChange={e => { dispatch({ type: 'name', name: e.target.value, header }) }}

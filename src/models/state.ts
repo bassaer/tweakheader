@@ -9,13 +9,13 @@ export interface Header {
 }
 
 export type State = {
-  playing: boolean;
+  running: boolean;
   headers: Header[];
 }
 
 export type ActionType = {
-  type: 'init' | 'playing' | 'add' | 'name' | 'value' | 'enable' | 'enable' | 'action' | 'delete';
-  playing?: boolean;
+  type: 'init' | 'running' | 'add' | 'name' | 'value' | 'enable' | 'enable' | 'action' | 'delete';
+  running?: boolean;
   header?: Header;
   name?: string;
   value?: string;
