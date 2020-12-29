@@ -1,51 +1,13 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import M from "materialize-css";
-
-type Action = 'Add' | 'Modify' | 'Delete';
+import { Action, ActionType, Header, State } from '../models/state';
 
 let counter = 0;
-
-interface Header {
-  id: string;
-  name: string;
-  value: string;
-  enable: boolean;
-  action: Action;
-}
-
-type State = {
-  playing: boolean;
-  headers: Header[];
-}
-
-type ActionType = {
-  type: 'playing' | 'add' | 'name' | 'value' | 'enable' | 'enable' | 'action' | 'delete';
-  playing?: boolean;
-  header?: Header;
-  name?: string;
-  value?: string;
-  enable?: boolean;
-  action?: Action;
-}
 
 const initialState: State = {
   playing: false,
   headers: [
-    {
-      id: String(counter++),
-      name: 'user-agent',
-      value: 'foo',
-      action: 'Modify',
-      enable: true
-    },
-    {
-      id: String(counter++),
-      name: 'Accept',
-      value: 'text/html',
-      action: 'Delete',
-      enable: true
-    },
     {
       id: String(counter++),
       name: '',
@@ -57,11 +19,19 @@ const initialState: State = {
 };
 
 const reducer = (state: State, action: ActionType): State => {
-  if (action.type === 'playing') {
+  if (action.type === 'init' && action.headers?.length) {
     return {
       ...state,
-      playing: !state.playing
+      headers: action.headers
     };
+  }
+  if (action.type === 'playing') {
+    const result = {
+      ...state,
+      playing: action.playing === undefined ? !state.playing : action.playing
+    };
+    save(result);
+    return result;
   }
   if (action.type === 'add') {
     const lastHeader = state.headers[state.headers.length - 1];
@@ -88,29 +58,44 @@ const reducer = (state: State, action: ActionType): State => {
   };
   header.enable = header.enable && !!header.name && !!header.value;
   const targetIndex = state.headers.findIndex(header => header.id === action.header?.id)
-  switch (action.type) {
-    case 'name':
-    case 'value':
-    case 'enable':
-    case 'action':
-      return {
-        ...state,
-        headers: [
-          ...state.headers.slice(0, targetIndex),
-          header,
-          ...state.headers.slice(targetIndex + 1),
-        ]
-      }
-  }
-  return { ...state, headers: state.headers.filter((_, index) => index !== targetIndex) }
+  const result = action.type === 'delete'
+    ? { ...state, headers: state.headers.filter((_, index) => index !== targetIndex) }
+    : {
+      ...state,
+      headers: [
+        ...state.headers.slice(0, targetIndex),
+        header,
+        ...state.headers.slice(targetIndex + 1),
+      ]
+    }
+  save(result);
+  return result;
 }
+
+const save = (state: State) => {
+  chrome.storage?.local.set({ state });
+};
 
 const App: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [isLoaded, setIsLoaded] = useState(false);
   useEffect(() => {
     const elems = document.querySelectorAll('select');
     M.FormSelect.init(elems, {});
-  }, [state]);
+  }, [state, isLoaded]);
+  useEffect(() => {
+    if (!chrome.storage) {
+      setIsLoaded(true);
+      return;
+    }
+    chrome.storage?.local.get('state', data => {
+      if (data.state) {
+        dispatch({ type: 'init', headers: data.state.headers as Header[] })
+        dispatch({ type: 'playing', playing: data.state.playing as boolean })
+      }
+      setIsLoaded(true);
+    });
+  }, []);
   return (
     <div className="App">
       <nav>
@@ -130,40 +115,46 @@ const App: React.FC = () => {
           </ul>
         </div>
       </nav>
-      <ul className="collection" style={{ overflow: 'visible' }}>
-        <form>
-          {state.headers.map(header => (
-            < li key={header.id} className="collection-item" style={{ padding: 0 }}>
-              <div className="row" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 0 }}>
-                <div className="switch col s1">
-                  <label>
-                    <input className="cyan" type="checkbox" checked={header.enable} onChange={e => dispatch({ type: 'enable', enable: e.target.checked, header })} />
-                    <span className="lever"></span>
-                  </label>
-                </div>
-                <div className="input-field col s1">
-                  <select className="cyan" defaultValue={header.action} onChange={e => dispatch({ type: 'action', action: e.target.value as Action, header })}>
-                    <option value="Add">Add</option>
-                    <option value="Modify">Modify</option>
-                    <option value="Delete">Delete</option>
-                  </select>
-                </div>
-                <div className="input-field col s4">
-                  <input placeholder="Name" defaultValue={header.name} onChange={e => { dispatch({ type: 'name', name: e.target.value, header }) }} />
-                </div>
-                <div className="input-field col s4">
-                  <input placeholder="Value" defaultValue={header.value} onChange={e => { dispatch({ type: 'value', value: e.target.value, header }) }} />
-                </div>
-                <a href="#!" className="col s1 " onClick={e => { dispatch({ type: 'delete', header }) }}>
-                  <i className="material-icons" style={{ color: "#26a69a" }}>
-                    delete
+      {isLoaded ? (
+        <ul className="collection" style={{ overflow: 'visible', marginTop: 0 }}>
+          <form>
+            {state.headers.map(header => (
+              < li key={header.id} className="collection-item" style={{ padding: 0 }}>
+                <div className="row" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 0 }}>
+                  <div className="switch col s1">
+                    <label>
+                      <input className="cyan" type="checkbox" checked={header.enable} onChange={e => dispatch({ type: 'enable', enable: e.target.checked, header })} />
+                      <span className="lever"></span>
+                    </label>
+                  </div>
+                  <div className="input-field col s1">
+                    <select className="cyan" defaultValue={header.action} onChange={e => dispatch({ type: 'action', action: e.target.value as Action, header })}>
+                      <option value="Add">Add</option>
+                      <option value="Modify">Modify</option>
+                      <option value="Delete">Delete</option>
+                    </select>
+                  </div>
+                  <div className="input-field col s4">
+                    <input placeholder="Name" defaultValue={header.name} onChange={e => { dispatch({ type: 'name', name: e.target.value, header }) }} />
+                  </div>
+                  <div className="input-field col s4">
+                    <input placeholder="Value" defaultValue={header.value} onChange={e => { dispatch({ type: 'value', value: e.target.value, header }) }} />
+                  </div>
+                  <a href="#!" className="col s1 " onClick={e => { dispatch({ type: 'delete', header }) }}>
+                    <i className="material-icons" style={{ color: "#26a69a" }}>
+                      delete
                   </i>
-                </a>
-              </div>
-            </li>
-          ))}
-        </form>
-      </ul>
+                  </a>
+                </div>
+              </li>
+            ))}
+          </form>
+        </ul>
+      ) : (
+          <div className="progress">
+            <div className="indeterminate"></div>
+          </div>
+        )}
     </div >
   );
 }

@@ -11,6 +11,7 @@
         "128": "assets/icon_128.png"
     },
     "permissions": [
+        "storage",
         "webRequest",
         "webRequestBlocking",
         "*://*/*/"
@@ -22,5 +23,5 @@
         "persistent": true
     },
     "options_page": "index.html",
-    "content_security_policy": "script-src 'self' 'sha256-PkkJAj4fJWbxfE0RESRRhoFFXa8pxiq4d7dPNMonMCE='; object-src 'self'"
+    "content_security_policy": "script-src 'self' 'sha256-Q3NAswUdYpUhGxrpc8p2dbM502Pe0r03yth8dwpVs5w='; object-src 'self'"
 }
