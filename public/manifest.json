@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
-    "name": "TweakHeader",
+    "name": "Tweak Header",
     "short_name": "TeakHeader",
-    "description": "tweak http header",
+    "description": "Tweak HTTP headers",
     "version": "0.0.1",
     "browser_action": {},
     "icons": {
@@ -22,6 +22,5 @@
         ],
         "persistent": true
     },
-    "options_page": "index.html",
-    "content_security_policy": "script-src 'self' 'sha256-Q3NAswUdYpUhGxrpc8p2dbM502Pe0r03yth8dwpVs5w='; object-src 'self'"
+    "options_page": "index.html"
 }
