@@ -56,7 +56,7 @@ const reducer = (state: State, action: ActionType): State => {
     enable: action.enable === undefined ? action.header.enable : action.enable,
     action: action.action === undefined ? action.header.action : action.action
   };
-  header.enable = header.enable && !!header.name && !!header.value;
+  header.enable = header.enable && !!header.name && (header.action === 'Delete' || !!header.value);
   const targetIndex = state.headers.findIndex(header => header.id === action.header?.id)
   const result = action.type === 'delete'
     ? { ...state, headers: state.headers.filter((_, index) => index !== targetIndex) }
@@ -123,22 +123,40 @@ const App: React.FC = () => {
                 <div className="row" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 0 }}>
                   <div className="switch col s1">
                     <label>
-                      <input className="cyan" type="checkbox" checked={header.enable} onChange={e => dispatch({ type: 'enable', enable: e.target.checked, header })} />
+                      <input
+                        className="cyan"
+                        type="checkbox"
+                        checked={header.enable}
+                        onChange={e => dispatch({ type: 'enable', enable: e.target.checked, header })}
+                      />
                       <span className="lever"></span>
                     </label>
                   </div>
                   <div className="input-field col s1">
-                    <select className="cyan" defaultValue={header.action} onChange={e => dispatch({ type: 'action', action: e.target.value as Action, header })}>
+                    <select
+                      className="cyan"
+                      defaultValue={header.action}
+                      onChange={e => dispatch({ type: 'action', action: e.target.value as Action, header })}
+                    >
                       <option value="Add">Add</option>
                       <option value="Modify">Modify</option>
                       <option value="Delete">Delete</option>
                     </select>
                   </div>
                   <div className="input-field col s4">
-                    <input placeholder="Name" defaultValue={header.name} onChange={e => { dispatch({ type: 'name', name: e.target.value, header }) }} />
+                    <input
+                      placeholder="Name"
+                      defaultValue={header.name}
+                      onChange={e => { dispatch({ type: 'name', name: e.target.value, header }) }}
+                    />
                   </div>
                   <div className="input-field col s4">
-                    <input placeholder="Value" defaultValue={header.value} onChange={e => { dispatch({ type: 'value', value: e.target.value, header }) }} />
+                    <input
+                      placeholder="Value"
+                      defaultValue={header.value}
+                      disabled={header.action === 'Delete'}
+                      onChange={e => { dispatch({ type: 'value', value: e.target.value, header }) }}
+                    />
                   </div>
                   <a href="#!" className="col s1 " onClick={e => { dispatch({ type: 'delete', header }) }}>
                     <i className="material-icons" style={{ color: "#26a69a" }}>
