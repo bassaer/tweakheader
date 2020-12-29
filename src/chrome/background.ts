@@ -1,20 +1,75 @@
-const tweakHeader = (detail: chrome.webRequest.WebRequestHeadersDetails) => {
-    const requestHeaders = detail.requestHeaders;
-    if (!requestHeaders) {
-        return { requestHeaders }
-    }
+import { State } from '../models/state';
 
-    for (const header of requestHeaders) {
-        if (header.name.toLocaleLowerCase() === 'user-agent') {
-            header.value = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Mobile/15E148 Safari/604.1';
-        }
-    }
-
-    return { requestHeaders }
+const state: State = {
+  running: false,
+  headers: []
 };
 
+chrome.storage?.local.get('state', (data) => {
+  if (data.state) {
+    state.running = data.state.playing;
+    state.headers = data.state.headers;
+    setBadge();
+  }
+});
+
+const tweakHeader = (detail: chrome.webRequest.WebRequestHeadersDetails) => {
+  const requestHeaders = detail.requestHeaders;
+  if (!state.running || !requestHeaders) {
+    return { requestHeaders };
+  }
+  const result: chrome.webRequest.HttpHeader[] = [];
+  for (const reqHeader of requestHeaders) {
+    let found = false;
+    for (const newHeader of state.headers) {
+      if (!newHeader.enable) {
+        continue;
+      }
+      if (reqHeader.name.toLocaleLowerCase() === newHeader.name.toLocaleLowerCase()) {
+        if (newHeader.action === 'Delete') {
+          found = true;
+          break;
+        }
+      }
+    }
+    if (found) {
+      continue;
+    }
+    result.push(reqHeader);
+  }
+  for (const header of state.headers) {
+    if (header.action !== 'Delete') {
+      result.push({ name: header.name, value: header.value });
+    }
+  }
+  return { requestHeaders: result };
+};
+
+chrome.browserAction.setPopup({ popup: '' });
+chrome.browserAction.onClicked.addListener(() => {
+  chrome.tabs.create({ url: 'index.html' });
+});
+
+chrome.webRequest.onBeforeSendHeaders.removeListener(tweakHeader);
 chrome.webRequest.onBeforeSendHeaders.addListener(
-    tweakHeader,
-    { urls: ['<all_urls>'] },
-    ['blocking', 'requestHeaders']
+  tweakHeader,
+  { urls: ['<all_urls>'] },
+  ['blocking', 'requestHeaders', 'extraHeaders']
 );
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (!changes.state.newValue) {
+    return;
+  }
+  const data = changes.state.newValue as State;
+  state.running = data.running;
+  state.headers = data.headers;
+  setBadge();
+});
+
+const setBadge = () => {
+  const count = state.headers.filter(header => header.enable).length;
+  chrome.browserAction.setBadgeText({ text: state.running ? String(count) : '' });
+  chrome.browserAction.setBadgeBackgroundColor({ color: '#FF0000' });
+}
+

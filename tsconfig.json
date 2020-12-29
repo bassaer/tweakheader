@@ -28,6 +28,6 @@
     "src/chrome/**/*"
   ],
   "include": [
-    "src"
+    "src/**/*"
   ]
 }

@@ -4,16 +4,14 @@
     "short_name": "TeakHeader",
     "description": "tweak http header",
     "version": "0.0.1",
-    "browser_action": {
-        "default_popup": "index.html",
-        "default_title": "Tweak Header"
-    },
+    "browser_action": {},
     "icons": {
         "32": "assets/icon_32.png",
         "48": "assets/icon_48.png",
         "128": "assets/icon_128.png"
     },
     "permissions": [
+        "storage",
         "webRequest",
         "webRequestBlocking",
         "*://*/*/"
@@ -24,5 +22,6 @@
         ],
         "persistent": true
     },
-    "options_page": "index.html"
+    "options_page": "index.html",
+    "content_security_policy": "script-src 'self' 'sha256-Q3NAswUdYpUhGxrpc8p2dbM502Pe0r03yth8dwpVs5w='; object-src 'self'"
 }
