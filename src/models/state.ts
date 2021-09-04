@@ -14,7 +14,7 @@ export type State = {
 }
 
 export type ActionType = {
-  type: 'init' | 'running' | 'add' | 'name' | 'value' | 'enable' | 'enable' | 'action' | 'delete';
+  type: 'init' | 'running' | 'add' | 'name' | 'value' | 'enable' | 'action' | 'delete';
   running?: boolean;
   header?: Header;
   name?: string;

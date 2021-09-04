@@ -3,14 +3,13 @@ import React, { useEffect, useReducer, useState } from 'react';
 import M from "materialize-css";
 import { Action, ActionType, Header, State } from '../models/state';
 import headerFields from '../models/fields';
-
-let counter = 0;
+import { v4 as uuidv4 } from 'uuid';
 
 const initialState: State = {
   running: false,
   headers: [
     {
-      id: String(counter++),
+      id: uuidv4(),
       name: '',
       value: '',
       action: 'Add',
@@ -43,7 +42,7 @@ const reducer = (state: State, action: ActionType): State => {
       ...state,
       headers: [
         ...state.headers,
-        { id: String(counter++), name: '', value: '', enable: false, action: 'Add' }
+        { id: uuidv4(), name: '', value: '', enable: false, action: 'Add' }
       ]
     }
   }
@@ -60,7 +59,7 @@ const reducer = (state: State, action: ActionType): State => {
   header.enable = header.enable && !!header.name && (header.action === 'Delete' || !!header.value);
   const targetIndex = state.headers.findIndex(header => header.id === action.header?.id)
   const result = action.type === 'delete'
-    ? { ...state, headers: state.headers.filter((_, index) => index !== targetIndex) }
+    ? { ...state, headers: state.headers.filter((item) => item.id !== action.header?.id) }
     : {
       ...state,
       headers: [
