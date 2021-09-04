@@ -38,7 +38,7 @@ const tweakHeader = (detail: chrome.webRequest.WebRequestHeadersDetails) => {
     result.push(reqHeader);
   }
   for (const header of state.headers) {
-    if (header.action !== 'Delete') {
+    if (header.action !== 'Delete' && header.enable) {
       result.push({ name: header.name, value: header.value });
     }
   }

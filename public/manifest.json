@@ -3,7 +3,7 @@
     "name": "Tweak Header",
     "short_name": "TeakHeader",
     "description": "Tweak HTTP headers",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "browser_action": {},
     "icons": {
         "32": "assets/icon_32.png",
