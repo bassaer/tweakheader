@@ -1,26 +1,28 @@
 {
-    "manifest_version": 2,
-    "name": "Tweak Header",
-    "short_name": "TeakHeader",
-    "description": "Tweak HTTP headers",
-    "version": "0.0.3",
-    "browser_action": {},
-    "icons": {
-        "32": "assets/icon_32.png",
-        "48": "assets/icon_48.png",
-        "128": "assets/icon_128.png"
-    },
-    "permissions": [
-        "storage",
-        "webRequest",
-        "webRequestBlocking",
-        "*://*/*/"
-    ],
-    "background": {
-        "scripts": [
-            "chrome/background.js"
-        ],
-        "persistent": true
-    },
-    "options_page": "index.html"
+  "manifest_version": 3,
+  "name": "Tweak Header",
+  "short_name": "TweakHeader",
+  "description": "Set or remove HTTP request headers.",
+  "version": "1.0.0",
+  "minimum_chrome_version": "120",
+  "action": {
+    "default_title": "Open Tweak Header"
+  },
+  "icons": {
+    "32": "assets/icon_32.png",
+    "48": "assets/icon_48.png",
+    "128": "assets/icon_128.png"
+  },
+  "permissions": [
+    "storage",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_page": "index.html"
 }
