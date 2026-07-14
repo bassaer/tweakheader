@@ -1,4 +1,4 @@
-export type Action = 'Add' | 'Modify' | 'Delete';
+export type Action = 'Set' | 'Remove';
 
 export interface Header {
   id: string;
@@ -15,11 +15,11 @@ export type State = {
 
 export type ActionType = {
   type: 'init' | 'running' | 'add' | 'name' | 'value' | 'enable' | 'action' | 'delete';
+  state?: State;
   running?: boolean;
   header?: Header;
   name?: string;
   value?: string;
   enable?: boolean;
   action?: Action;
-  headers?: Header[];
 }
